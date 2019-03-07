@@ -57,6 +57,8 @@ function setup() {
   bomberman.addAnimation("front", bombermanImg.front);
   bomberman.addAnimation("left", bombermanImg.left);
   bomberman.addAnimation("right", bombermanImg.right);
+  bomberman.setCollider("rectangle", 0, 8, w * 1.1, w * 2);
+
   bomberman.scale = w / 100;
 
   bomberman.depth = 2;
