@@ -58,11 +58,23 @@ function setup() {
   bomberman.addAnimation("left", bombermanImg.left);
   bomberman.addAnimation("right", bombermanImg.right);
   bomberman.scale = w / 100;
+
+  bomberman.depth = 2;
+
+  for (element of greenField) {
+    element.depth = 1;
+  }
+
+  for (element of wall) {
+    element.depth = 1;
+  }
+
 }
 
 
 function draw() {
   bombermanWalkFunction();
+  bomberman.collide(wall);
   drawSprites();
 }
 
