@@ -7,11 +7,6 @@ let bombermanImg = {
   right: 0,
 };
 
-let bombImg = {
-  burning: 0,
-  exposion: 0,
-};
-
 let enemyImg = {
   back: 0,
   front: 0,
@@ -52,10 +47,6 @@ function preload() {
   bombermanImg.front = loadAnimation("sprites/Bomberman/Front/Bman_F_f00.png", "sprites/Bomberman/Front/Bman_F_f07.png");
   bombermanImg.left = loadAnimation("sprites/Bomberman/Left/Bman_L_f00.png", "sprites/Bomberman/Left/Bman_L_f07.png");
   bombermanImg.right = loadAnimation("sprites/Bomberman/Right/Bman_R_f00.png", "sprites/Bomberman/Right/Bman_R_f07.png");
-
-  // Изображения для анимации бомбы
-  bombImg.burning = loadAnimation("sprites/Bomb/Bomb_f01.png", "sprites/Bomb/Bomb_f03.png");
-  bombImg.explosion = loadAnimation("sprites/Flame/Flame_f00.png", "sprites/Flame/Flame_f04.png");
 
   // Изображения для анимации врага
   enemyImg.back = loadAnimation("sprites/Creep/Back/Creep_B_f00.png", "sprites/Creep/Back/Creep_B_f05.png");
@@ -223,39 +214,6 @@ function bombermanWalkFunction() {
   if (!keyIsPressed) {
     bomberman.animation.stop();
     bomberman.setVelocity(0, 0);
-  }
-
-}
-/*----------------------------------------------------------------------------*/
-
-
-/*------------------- Класс для объекта бомба  -------------------------------*/
-function BombClass() {
-  this.x = bomberman.position.x;
-  this.y = bomberman.position.y;
-  this.timer = frameCount;
-
-  this.setUp = function() {
-    this.bomb = createSprite(this.x, this.y);
-    this.bomb.addAnimation("burnin", bombImg.burning);
-    this.bomb.scale = w / this.bomb.width;
-    this.bomb.life = 100;
-  }
-
-  this.explosion = function() {
-    if (frameCount - this.timer > 100) {
-      this.top = createSprite(this.x, this.y);
-      this.top.addAnimation("top", bombImg.explosion);
-      this.top.life = 100;
-
-      this.right = createSprite(this.x + w, this.y);
-      this.right.addAnimation("right", bombImg.explosion);
-      this.right.rotation = 90;
-      this.right.life = 100
-
-      this.timer = frameCount;
-    }
-
   }
 
 }
