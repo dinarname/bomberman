@@ -14,12 +14,11 @@ let enemyImg = {
   right: 0,
 };
 
-let bobmbImg;
+let bombImg;
 
 let explosionImg = {
   center: 0,
-  beamMiddle: 0,
-  beamEnd: 0,
+  beam: 0,
 };
 
 /*----------------------------------------------------------------------------*/
@@ -75,8 +74,7 @@ function preload() {
 
   // Изобраджения для анимации взрыва
   explosionImg.center = loadAnimation("sprites/Explosion/center-00.png", "sprites/Explosion/center-05.png");
-  explosionImg.beamMiddle = loadAnimation("sprites/Explosion/beam-middle-00.png", "sprites/Explosion/beam-middle-05.png");
-  explosionImg.beamEnd = loadAnimation("sprites/Explosion/beam-end-00.png", "sprites/Explosion/beam-end-05.png");
+  explosionImg.beam = loadAnimation("sprites/Explosion/beam-end-00.png", "sprites/Explosion/beam-end-05.png");
 
   // Звуки
   explosionSound = loadSound("sound/bomb.wav");
@@ -108,7 +106,7 @@ function setup() {
 
   // Бомба
   bombs = new Group();
-  // expl = new Group();
+
 
   // Враг. Создание. Анимация. Размер.
   // Чтобы поместить врагов в свободные от кирпичей ячейки - соберём координаты
@@ -314,15 +312,14 @@ function createBomb() {
   b.life = 100;
   b.explosion = new explosion(x, y);
   bombs.add(b);
-  // explosion();
 }
 /*----------------------------------------------------------------------------*/
 
 /*------------------------ Анимация взрыва -----------------------------*/
 
 function explosion(x, y) {
-  let timer = frameCount;
   let expl = new Group();
+  let timer = frameCount;
   let isCreated = false;
 
   this.init = function() {
@@ -345,24 +342,24 @@ function explosion(x, y) {
 
     // Правый луч
     let rightBeam = createSprite(x + w, y);
-    rightBeam.addAnimation("right", explosionImg.beamEnd);
+    rightBeam.addAnimation("right", explosionImg.beam);
     expl.add(rightBeam);
 
     // Нижний луч
     let bottomBeam = createSprite(x, y + w);
-    bottomBeam.addAnimation("bottom", explosionImg.beamEnd);
+    bottomBeam.addAnimation("bottom", explosionImg.beam);
     bottomBeam.rotation = 90;
     expl.add(bottomBeam);
 
     // Левый луч
     let leftBeam = createSprite(x - w, y);
-    leftBeam.addAnimation("left", explosionImg.beamEnd);
+    leftBeam.addAnimation("left", explosionImg.beam);
     leftBeam.rotation = 180;
     expl.add(leftBeam);
 
     // Верхний луч
     let topBeam = createSprite(x, y - w);
-    topBeam.addAnimation("top", explosionImg.beamEnd);
+    topBeam.addAnimation("top", explosionImg.beam);
     topBeam.rotation = -90;
     expl.add(topBeam);
 
