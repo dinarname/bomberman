@@ -14,6 +14,14 @@ let enemyImg = {
   right: 0,
 };
 
+let bobmbImg;
+
+let explosionImg = {
+  center: 0,
+  beamMiddle: 0,
+  beamEnd: 0,
+};
+
 /*----------------------------------------------------------------------------*/
 
 
@@ -23,6 +31,7 @@ let wall;
 let bricks;
 let enemies;
 let bombs;
+let expl;
 
 let bomberman;
 /*----------------------------------------------------------------------------*/
@@ -34,8 +43,15 @@ let cols = 17;
 let w;
 /*----------------------------------------------------------------------------*/
 
+/*-------------------------- Звуки -------------------------------*/
+let explosionSound;
+let walkingSound;
+/*----------------------------------------------------------------------------*/
 
-/*---------------------------- Предзагрузка изображений ----------------------*/
+
+
+
+/*---------------------------- Предзагрузка изображений и звуков -------------*/
 function preload() {
   // Изображения для создания игрового поля
   grassImg = loadImage("sprites/Blocks/BackgroundTile.png");
@@ -53,6 +69,18 @@ function preload() {
   enemyImg.front = loadAnimation("sprites/Creep/Front/Creep_F_f00.png", "sprites/Creep/Front/Creep_F_f05.png");
   enemyImg.left = loadAnimation("sprites/Creep/Left/Creep_L_f00.png", "sprites/Creep/Left/Creep_L_f05.png");
   enemyImg.right = loadAnimation("sprites/Creep/Right/Creep_R_f00.png", "sprites/Creep/Right/Creep_R_f05.png");
+
+  // Изображения для анимации бомбы
+  bombImg = loadAnimation("sprites/Bomb/Bomb_f01.png", "sprites/Bomb/Bomb_f03.png");
+
+  // Изобраджения для анимации взрыва
+  explosionImg.center = loadAnimation("sprites/Explosion/center-00.png", "sprites/Explosion/center-05.png");
+  explosionImg.beamMiddle = loadAnimation("sprites/Explosion/beam-middle-00.png", "sprites/Explosion/beam-middle-05.png");
+  explosionImg.beamEnd = loadAnimation("sprites/Explosion/beam-end-00.png", "sprites/Explosion/beam-end-05.png");
+
+  // Звуки
+  explosionSound = loadSound("sound/bomb.wav");
+  walkingSound = loadSound("sound/menu_click.wav");
 }
 /*----------------------------------------------------------------------------*/
 
@@ -76,9 +104,11 @@ function setup() {
   bomberman.addAnimation("right", bombermanImg.right);
   bomberman.setCollider("rectangle", 0, 8, w * 1.1, w * 2);
   bomberman.scale = w / 100;
+  bomberman.lifesCounter = 3;
 
   // Бомба
-
+  bombs = new Group();
+  // expl = new Group();
 
   // Враг. Создание. Анимация. Размер.
   // Чтобы поместить врагов в свободные от кирпичей ячейки - соберём координаты
@@ -118,11 +148,16 @@ function setup() {
 
   // Указываем слои для отображения спрайтов
   bomberman.depth = 2;
+
   for (element of greenField) {
     element.depth = 1;
   }
 
   for (element of wall) {
+    element.depth = 1;
+  }
+
+  for (element of bricks) {
     element.depth = 1;
   }
 
@@ -136,6 +171,16 @@ function draw() {
 
   enemies.collide(wall, enemyChangeDirection);
   enemies.collide(bricks, enemyChangeDirection);
+
+  if (keyWentDown(" ")) {
+    createBomb();
+  }
+
+  for (bomb of bombs) {
+    bomb.explosion.init();
+  }
+
+  enemies.collide(bombs, enemyChangeDirection);
 
   drawSprites();
 }
@@ -191,6 +236,14 @@ function bombermanWalkFunction() {
   bomberman.animation.play();
   bomberman.animation.frameDelay = 2;
 
+
+
+  if (keyIsPressed && !walkingSound.isPlaying()) {
+    walkingSound.setVolume(0.1);
+    walkingSound.stop();
+    walkingSound.play();
+  }
+
   if (keyDown(UP_ARROW)) {
     bomberman.changeAnimation("back");
     bomberman.setVelocity(0, -velocity);
@@ -244,9 +297,116 @@ function enemyChangeDirection() {
   }
 
 }
+/*----------------------------------------------------------------------------*/
 
 
+/*------------------------ Создание бомбы -------------------------------*/
+function createBomb() {
+  // Ставим бомбу в сетку
+  let x = bomberman.position.x;
+  let y = bomberman.position.y;
+  x = floor(x / w) * w + w / 2;
+  y = floor(y / w) * w + w / 2;
 
+  let b = createSprite(x, y);
+  b.addAnimation("flame", bombImg);
+  b.scale = w / 60;
+  b.life = 100;
+  b.explosion = new explosion(x, y);
+  bombs.add(b);
+  // explosion();
+}
+/*----------------------------------------------------------------------------*/
+
+/*------------------------ Анимация взрыва -----------------------------*/
+
+function explosion(x, y) {
+  let timer = frameCount;
+  let expl = new Group();
+  let isCreated = false;
+
+  this.init = function() {
+    if (frameCount - timer > 65) {
+      if (!isCreated) {
+        this.create();
+        explosionSound.play();
+      }
+
+      this.wallExeption();
+      this.hit();
+    }
+  }
+
+  this.create = function() {
+    // Центр взрыва
+    let centerExplosion = createSprite(x, y);
+    centerExplosion.addAnimation("center", explosionImg.center);
+    expl.add(centerExplosion);
+
+    // Правый луч
+    let rightBeam = createSprite(x + w, y);
+    rightBeam.addAnimation("right", explosionImg.beamEnd);
+    expl.add(rightBeam);
+
+    // Нижний луч
+    let bottomBeam = createSprite(x, y + w);
+    bottomBeam.addAnimation("bottom", explosionImg.beamEnd);
+    bottomBeam.rotation = 90;
+    expl.add(bottomBeam);
+
+    // Левый луч
+    let leftBeam = createSprite(x - w, y);
+    leftBeam.addAnimation("left", explosionImg.beamEnd);
+    leftBeam.rotation = 180;
+    expl.add(leftBeam);
+
+    // Верхний луч
+    let topBeam = createSprite(x, y - w);
+    topBeam.addAnimation("top", explosionImg.beamEnd);
+    topBeam.rotation = -90;
+    expl.add(topBeam);
+
+
+    for (element of expl) {
+      element.scale = w / 49;
+      element.life = 35;
+      element.animation.frameDelay = 5;
+    }
+
+    isCreated = true;
+  };
+
+  // Удаляем лучи от взрыва, если касается стены
+  this.wallExeption = function() {
+    for (beam of expl) {
+      beam.overlap(wall, beam.remove);
+    }
+  };
+
+  // Удаляем ирпичи, если их коснулся взрыв
+  this.hit = function() {
+    for (brick of bricks) {
+      for (beam of expl) {
+        brick.overlap(beam, brick.remove);
+      }
+    }
+
+    // Удаляем врагов, если их коснулся взрыв
+    for (enemy of enemies) {
+      for (beam of expl) {
+        enemy.overlap(beam, enemy.remove);
+      }
+    }
+
+    // Отнимаем жизни у бомбермена, если он коснулся взрыва
+    // for (beam of expl) {
+    //   beam.overlap(bomberman, bomberman.lifesCounter -= 1);
+    // }
+
+  };
+
+
+}
 
 
 /*----------------------------------------------------------------------------*/
