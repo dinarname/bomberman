@@ -6,7 +6,6 @@ let bombermanImg = {
   left: 0,
   right: 0,
 };
-
 let enemyImg = {
   back: 0,
   front: 0,
@@ -82,6 +81,10 @@ function preload() {
 }
 /*----------------------------------------------------------------------------*/
 
+let livesDisplay;
+let invinsibilityTimer;
+let gameOver;
+let gameStarted;
 
 function setup() {
   let canvas = createCanvas(680, 520);
@@ -103,7 +106,7 @@ function setup() {
   bomberman.setCollider("rectangle", 0, 8, w * 1.1, w * 2);
   bomberman.scale = w / 100;
   bomberman.lifesCounter = 3;
-
+  bomberman.invinsible = false;
   // Бомба
   bombs = new Group();
 
@@ -159,16 +162,30 @@ function setup() {
     element.depth = 1;
   }
 
+  livesDisplay = document.getElementById("lives");
+  livesDisplay.textContent = "3";
+
+  gameOver = document.getElementById("gameover");
+  gameOver.style.display = "block";
+  gameOver.textContent = "Press any key to start";
+  gameStarted = false;
+  document.addEventListener('keypress', onGameStart);
 }
 
 
 function draw() {
+  if (!gameStarted) {
+    noLoop();
+  }
   bombermanWalkFunction();
   bomberman.collide(wall);
   bomberman.collide(bricks);
-
+  if (!bomberman.invinsible) {
+    bomberman.collide(enemies, onBomberManHit);
+  }
   enemies.collide(wall, enemyChangeDirection);
   enemies.collide(bricks, enemyChangeDirection);
+  enemies.collide(bomberman, enemyChangeDirection);
 
   if (keyWentDown(" ")) {
     createBomb();
@@ -179,7 +196,18 @@ function draw() {
   }
 
   enemies.collide(bombs, enemyChangeDirection);
-
+  // Проверяем, не прошла ли неуязвимость после последнего получения урона
+  if (frameCount - invinsibilityTimer > 100) {
+    bomberman.invinsible = false;
+  }
+  // Условие поражения
+  if (bomberman.lifesCounter <= 0) {
+    onLoss();
+  }
+  //Условие победы
+  if (enemies.length == 0) {
+    onWin();
+  }
   drawSprites();
 }
 
@@ -396,14 +424,43 @@ function explosion(x, y) {
     }
 
     // Отнимаем жизни у бомбермена, если он коснулся взрыва
-    // for (beam of expl) {
-    //   beam.overlap(bomberman, bomberman.lifesCounter -= 1);
-    // }
+    for (beam of expl) {
+      if (!bomberman.invinsible) {
+        beam.overlap(bomberman, onBomberManHit);
+      }
+    }
 
   };
 
 
 }
 
+/*Если бобмермен коллайдится с взрывом, отнимаем жизнь и делаем его неуязвимым
+на несколько секунд, чтобы он не наполучал еще, пока продолжает коллайдиться с
+спрайтом взрыва; обновляем количество жизней*/
+function onBomberManHit() {
+  bomberman.lifesCounter -= 1;
+  bomberman.invinsible = true;
+  invinsibilityTimer = frameCount;
+  livesDisplay.textContent = bomberman.lifesCounter;
+}
 
+function onLoss() {
+  noLoop();
+  gameOver.textContent = "WASTED";
+  gameOver.style.display = "block";
+}
+
+function onWin() {
+  noLoop();
+  gameOver.innerHTML = "MISSION PASSED!<br>RESPECT+";
+  gameOver.style.display = "block";
+}
+
+function onGameStart() {
+  gameStarted = true;
+  loop();
+  gameOver.style.display = "none";
+  document.removeEventListener('keypress', onGameStart);
+}
 /*----------------------------------------------------------------------------*/

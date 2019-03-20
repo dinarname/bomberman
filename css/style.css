@@ -9,3 +9,14 @@ p {
   font-weight: bold;
   font-family: 'Righteous';
 }
+
+#gameover {
+  margin: 0 auto;
+  text-align: center;
+  font-family: 'Righteous';
+  font-size: 80px;
+  display: none;
+  color: orange;
+  -webkit-text-stroke: 3px black;
+  paint-order: stroke fill;
+}
