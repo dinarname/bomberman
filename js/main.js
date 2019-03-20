@@ -78,6 +78,7 @@ function preload() {
   // Звуки
   explosionSound = loadSound("sound/bomb.wav");
   walkingSound = loadSound("sound/menu_click.wav");
+  missionPassed = loadSound("sound/missionpassed.wav");
 }
 /*----------------------------------------------------------------------------*/
 
@@ -448,19 +449,20 @@ function onBomberManHit() {
 function onLoss() {
   noLoop();
   gameOver.textContent = "WASTED";
-  gameOver.style.display = "block";
+  gameOver.style.visibility = "visible";
 }
 
 function onWin() {
+  missionPassed.play();
   noLoop();
-  gameOver.innerHTML = "MISSION PASSED!<br>RESPECT+";
-  gameOver.style.display = "block";
+  gameOver.innerHTML = "MISSION PASSED! RESPECT+";
+  gameOver.style.visibility = "visible";
 }
 
 function onGameStart() {
   gameStarted = true;
   loop();
-  gameOver.style.display = "none";
+  gameOver.style.visibility = "hidden";
   document.removeEventListener('keypress', onGameStart);
 }
 /*----------------------------------------------------------------------------*/
