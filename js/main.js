@@ -44,10 +44,18 @@ let w;
 /*-------------------------- Звуки -------------------------------*/
 let explosionSound;
 let walkingSound;
+let crashSound;
+let hitSound;
+let missionPassed;
+let missionFailed;
 /*----------------------------------------------------------------------------*/
 
-
-
+/*-------------------------- Счетчик жизней + состояние игры------------------*/
+let lifesDisplay;
+let invinsibilityTimer;
+let gameOver;
+let gameStarted;
+/*----------------------------------------------------------------------------*/
 
 /*---------------------------- Предзагрузка изображений и звуков -------------*/
 function preload() {
@@ -79,13 +87,13 @@ function preload() {
   explosionSound = loadSound("sound/bomb.wav");
   walkingSound = loadSound("sound/menu_click.wav");
   missionPassed = loadSound("sound/missionpassed.wav");
+  hitSound = loadSound("sound/plyr_death.wav");
+  crashSound = loadSound("sound/crash.wav");
+  missionFailed = loadSound("sound/missionFailed.wav");
 }
 /*----------------------------------------------------------------------------*/
 
-let livesDisplay;
-let invinsibilityTimer;
-let gameOver;
-let gameStarted;
+
 
 function setup() {
   let canvas = createCanvas(680, 520);
@@ -163,11 +171,10 @@ function setup() {
     element.depth = 1;
   }
 
-  livesDisplay = document.getElementById("lives");
-  livesDisplay.textContent = "3";
+  lifesDisplay = document.getElementById("lives");
+  lifesDisplay.textContent = bomberman.lifesCounter;
 
   gameOver = document.getElementById("gameover");
-  gameOver.style.display = "block";
   gameOver.textContent = "Press any key to start";
   gameStarted = false;
   document.addEventListener('keypress', onGameStart);
@@ -413,7 +420,10 @@ function explosion(x, y) {
   this.hit = function() {
     for (brick of bricks) {
       for (beam of expl) {
-        brick.overlap(beam, brick.remove);
+        brick.overlap(beam, function() {
+          brick.remove();
+          crashSound.play();
+        });
       }
     }
 
@@ -443,10 +453,12 @@ function onBomberManHit() {
   bomberman.lifesCounter -= 1;
   bomberman.invinsible = true;
   invinsibilityTimer = frameCount;
-  livesDisplay.textContent = bomberman.lifesCounter;
+  lifesDisplay.textContent = bomberman.lifesCounter;
+  hitSound.play();
 }
 
 function onLoss() {
+  missionFailed.play()
   noLoop();
   gameOver.textContent = "WASTED";
   gameOver.style.visibility = "visible";
@@ -455,7 +467,7 @@ function onLoss() {
 function onWin() {
   missionPassed.play();
   noLoop();
-  gameOver.innerHTML = "MISSION PASSED! RESPECT+";
+  gameOver.textContent = "MISSION PASSED! RESPECT+";
   gameOver.style.visibility = "visible";
 }
 
