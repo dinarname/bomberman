@@ -89,7 +89,7 @@ function preload() {
   missionPassed = loadSound("sound/missionpassed.wav");
   hitSound = loadSound("sound/plyr_death.wav");
   crashSound = loadSound("sound/crash.wav");
-  missionFailed = loadSound("sound/missionFailed.wav");
+  missionFailed = loadSound("sound/missionfailed.wav");
 }
 /*----------------------------------------------------------------------------*/
 
